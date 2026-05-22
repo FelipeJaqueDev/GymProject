@@ -144,7 +144,7 @@ export default function ShapeDivider({
   flipX = false,    // voltear horizontalmente
   flipY = false,    // voltear verticalmente
 }) {
-  const svg = SHAPES[shape];
+  const svg = SHAPES[shape as keyof typeof SHAPES];
 
   // transformaciones dinámicas (flip)
   const transforms = [];

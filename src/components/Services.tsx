@@ -1,269 +1,629 @@
-import React, { forwardRef, useLayoutEffect, useRef } from "react"
-import { cn } from "@/lib/utils"
-import { Dumbbell, Bike, Activity, BoomBox, PersonStanding, LandPlot, HandFist } from "lucide-react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { AnimatedBeam } from "@/components/ui/animated-beam"
-import { CoreFitTheme } from "@/themes/CoreFitTheme"
-import { AuroraText } from "./ui/aurora-text"
+import { useLayoutEffect, useRef, useState } from "react";
+import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { Draggable } from "gsap/Draggable";
+import { CoreFitTheme } from "@/themes/CoreFitTheme";
+import { AuroraText } from "@/components/ui/aurora-text";
+import CursorGlow from "@/motions/CursorGlow";
+import {
+  Dumbbell,
+  Bike,
+  Activity,
+  BoomBox,
+  PersonStanding,
+  LandPlot,
+  HandFist,
+  ArrowUpRight,
+  X,
+  Sparkles,
+} from "lucide-react";
 
-
+import personalTrainerImg from "../assets/Images/Bg/woman_personal_trainer.jpg";
+import spinningImg from "../assets/Images/Bg/spinning.jpg";
+import pesasImg from "../assets/Images/Bg/img2.jpg";
+import cardioImg from "../assets/Images/Bg/img3.jpg";
+import classesImg from "../assets/Images/Bg/img4.jpg";
+import functionalImg from "../assets/Images/Bg/img5.jpg";
+import nutritionImg from "../assets/Images/Bg/img6.jpg";
 
 gsap.registerPlugin(ScrollTrigger);
-gsap.registerPlugin(Draggable);
 
-
-interface CircleProps {
-  className?: string
-  children?: React.ReactNode
-  borderColor?: string // ✅ nuevo prop
+interface ServiceData {
+  id: string;
+  number: string;
+  title: string;
+  short: string;
+  description: string;
+  highlights: string[];
+  Icon: typeof Dumbbell;
+  color: string;
+  image: string;
+  glyph: string;
+  hero?: boolean;
+  wide?: boolean;
 }
 
+const SERVICES: ServiceData[] = [
+  {
+    id: "personal",
+    number: "01",
+    title: "Personal Training",
+    short: "Coach 1-on-1",
+    description:
+      "Un entrenador asignado a tus objetivos. Disponibilidad flexible, comunicación directa por app y ajustes en tiempo real.",
+    highlights: ["Coach exclusivo", "App de seguimiento", "Resultados garantizados"],
+    Icon: PersonStanding,
+    color: "#F5F5F5",
+    image: personalTrainerImg,
+    glyph: "💪",
+    hero: true,
+  },
+  {
+    id: "cycling",
+    number: "02",
+    title: "Cycling Indoor",
+    short: "Cardio explosivo",
+    description:
+      "Clases de cycling con música de alta energía. Quema entre 500-800 calorías por sesión.",
+    highlights: ["Clases diarias", "Música en vivo", "Métricas reales"],
+    Icon: Bike,
+    color: "#00E676",
+    image: spinningImg,
+    glyph: "🚴",
+  },
+  {
+    id: "classes",
+    number: "03",
+    title: "Clases Grupales",
+    short: "Energía en grupo",
+    description:
+      "HIIT, ritmos latinos, body combat, yoga, pilates. Sesiones de 45 min con instructores certificados.",
+    highlights: ["+30 clases/semana", "Niveles variados", "Comunidad activa"],
+    Icon: BoomBox,
+    color: "#E53935",
+    image: classesImg,
+    glyph: "🎵",
+  },
+  {
+    id: "strength",
+    number: "04",
+    title: "Programas de Fuerza",
+    short: "Powerlifting & Strongman",
+    description:
+      "Para quienes buscan ir más allá. Programas de fuerza pura: squat, bench, deadlift. Equipo de competencia.",
+    highlights: ["Equipo IPF", "Coach especializado", "Competencias internas"],
+    Icon: HandFist,
+    color: "#FFEA00",
+    image: pesasImg,
+    glyph: "🥇",
+    wide: true,
+  },
+  {
+    id: "functional",
+    number: "05",
+    title: "Funcional",
+    short: "Movimiento real",
+    description:
+      "Movilidad, equilibrio, core. Entrenamiento que se traslada a tu vida diaria sin lesiones.",
+    highlights: ["Sin máquinas", "Trabajo en parejas", "Test bimensual"],
+    Icon: Activity,
+    color: "#2979FF",
+    image: functionalImg,
+    glyph: "🤸",
+  },
+  {
+    id: "nutrition",
+    number: "06",
+    title: "Nutrición Deportiva",
+    short: "Plan alimenticio",
+    description:
+      "Asesoría personalizada. Macros calculados según tu objetivo, recetas y suplementación segura.",
+    highlights: ["Nutricionista", "Macros + recetas", "Suplementos seguros"],
+    Icon: LandPlot,
+    color: "#9E9E9E",
+    image: nutritionImg,
+    glyph: "🥗",
+  },
+  {
+    id: "cardio",
+    number: "07",
+    title: "Evaluación Física",
+    short: "Análisis InBody",
+    description:
+      "Evaluación completa de composición corporal, movilidad y resistencia. Plan basado en datos.",
+    highlights: ["Test InBody", "Análisis postural", "Reporte detallado"],
+    Icon: Dumbbell,
+    color: "#2979FF",
+    image: cardioImg,
+    glyph: "📈",
+  },
+];
 
+interface BentoCardProps {
+  service: ServiceData;
+  onOpen: (s: ServiceData) => void;
+  className?: string;
+  layoutId: string;
+}
 
-const Circle = forwardRef<HTMLDivElement, CircleProps & { gradientBorder?: string }>(
-
-  ({ className, children, borderColor = "#00FF88", gradientBorder }, ref) => {
-
-    if (gradientBorder) {
-
-      // 🔥 versión con borde gradiente
-
-      return (
-
-        <div
-
-          ref={ref}
-
-          className={cn(
-
-            "relative z-10 flex size-12 items-center justify-center rounded-full p-[2px]",
-
-            className
-
-          )}
-
-        >
-
-          <div
-
-            className="absolute inset-0 rounded-full"
-
-            style={{
-
-              background: gradientBorder,
-
-            }}
-
-          />
-
-          <div className="relative flex size-full items-center justify-center rounded-full bg-black p-3 shadow-[0_0_20px_-12px_rgba(0,0,0,0.8)]">
-
-            {children}
-
-          </div>
-
-        </div>
-
-      )
-
-    }
-
-
-
-    // 🟢 versión con borde sólido normal
-
-    return (
-
-      <div
-
-        ref={ref}
-
-        style={{ borderColor }}
-
-        className={cn(
-
-          "z-10 flex size-12 items-center justify-center rounded-full border-2 bg-black p-3 shadow-[0_0_20px_-12px_rgba(0,0,0,0.8)]",
-
-          className
-
-        )}
-
-      >
-
-        {children}
-
-      </div>
-
-    )
-
-  }
-
-)
-
-Circle.displayName = "Circle"
-
-
-
-export default function Services() {
-
-
-
-  const sectionRef = useRef<HTMLElement>(null);
-
-  const containerRef = useRef<HTMLDivElement>(null)
-
-  const div1Ref = useRef<HTMLDivElement>(null)
-
-  const div2Ref = useRef<HTMLDivElement>(null)
-
-  const div3Ref = useRef<HTMLDivElement>(null)
-
-  const div4Ref = useRef<HTMLDivElement>(null)
-
-  const div5Ref = useRef<HTMLDivElement>(null)
-
-  const div6Ref = useRef<HTMLDivElement>(null)
-
-  const div7Ref = useRef<HTMLDivElement>(null)
-
-  const cardRef = useRef<HTMLDivElement>(null)
-
-  const { colors } = CoreFitTheme;
-
-
+function BentoCard({ service, onOpen, className = "", layoutId }: BentoCardProps) {
+  const wrap = useRef<HTMLButtonElement>(null);
+  const inner = useRef<HTMLDivElement>(null);
+  const imgRef = useRef<HTMLImageElement>(null);
 
   useLayoutEffect(() => {
+    const el = wrap.current;
+    const ic = inner.current;
+    const im = imgRef.current;
+    if (!el || !ic) return;
+    if (window.matchMedia("(pointer: coarse)").matches) return;
+    const xR = gsap.quickTo(ic, "rotateX", { duration: 0.55, ease: "power3.out" });
+    const yR = gsap.quickTo(ic, "rotateY", { duration: 0.55, ease: "power3.out" });
+    const onMove = (e: MouseEvent) => {
+      const r = el.getBoundingClientRect();
+      const px = (e.clientX - r.left) / r.width - 0.5;
+      const py = (e.clientY - r.top) / r.height - 0.5;
+      xR(-py * 8);
+      yR(px * 8);
+      if (im) gsap.to(im, { scale: 1.08, duration: 0.6, ease: "power2.out" });
+    };
+    const onLeave = () => {
+      xR(0);
+      yR(0);
+      if (im) gsap.to(im, { scale: 1, duration: 0.7, ease: "power3.out" });
+    };
+    el.addEventListener("mousemove", onMove);
+    el.addEventListener("mouseleave", onLeave);
+    return () => {
+      el.removeEventListener("mousemove", onMove);
+      el.removeEventListener("mouseleave", onLeave);
+    };
+  }, []);
 
+  const isHero = service.hero;
+  const Icon = service.Icon;
 
+  return (
+    <motion.button
+      ref={wrap}
+      onClick={() => onOpen(service)}
+      data-magnetic
+      layoutId={layoutId}
+      whileHover={{ y: -4 }}
+      transition={{ type: "spring", stiffness: 300, damping: 22 }}
+      className={`group relative overflow-hidden rounded-3xl border border-white/10 bg-black text-left cursor-pointer focus:outline-none ${className}`}
+      style={{ perspective: 1200 }}
+    >
+      <div
+        ref={inner}
+        className="relative w-full h-full will-change-transform"
+        style={{ transformStyle: "preserve-3d" }}
+      >
+        <motion.img
+          ref={imgRef}
+          layoutId={`${layoutId}-img`}
+          src={service.image}
+          alt={service.title}
+          className="absolute inset-0 w-full h-full object-cover will-change-transform"
+          style={{ filter: "saturate(1.05)" }}
+        />
+        <div
+          className="absolute inset-0 transition-opacity duration-500"
+          style={{
+            background: `linear-gradient(160deg, ${service.color}22 0%, rgba(0,0,0,0.45) 40%, rgba(0,0,0,0.85) 100%)`,
+          }}
+        />
+        <div className="absolute inset-0 ring-1 ring-inset ring-white/5 rounded-3xl pointer-events-none" />
 
+        <div
+          className={`relative h-full flex flex-col justify-between ${
+            isHero ? "p-6 md:p-10" : "p-5 md:p-6"
+          }`}
+          style={{ transformStyle: "preserve-3d" }}
+        >
+          <div className="flex items-start justify-between" style={{ transform: "translateZ(20px)" }}>
+            <span
+              className={`font-black tabular-nums tracking-tighter ${
+                isHero ? "text-7xl md:text-9xl" : "text-4xl md:text-5xl"
+              }`}
+              style={{ color: service.color, opacity: 0.85 }}
+            >
+              {service.number}
+            </span>
+            <span
+              className="shrink-0 w-10 h-10 rounded-xl flex items-center justify-center backdrop-blur-md border border-white/15"
+              style={{ background: `${service.color}33`, color: service.color }}
+            >
+              <Icon size={isHero ? 20 : 16} />
+            </span>
+          </div>
+
+          <div style={{ transform: "translateZ(15px)" }}>
+            <p
+              className="text-[10px] uppercase tracking-[0.3em] mb-2 font-semibold"
+              style={{ color: service.color }}
+            >
+              {service.short}
+            </p>
+            <h3
+              className={`font-extrabold text-white tracking-tight ${
+                isHero
+                  ? "text-3xl md:text-5xl mb-3"
+                  : "text-lg md:text-xl mb-1.5"
+              }`}
+            >
+              {isHero ? (
+                <>
+                  {service.title.split(" ")[0]}{" "}
+                  <AuroraText speed={1.5}>
+                    {service.title.split(" ").slice(1).join(" ")}
+                  </AuroraText>
+                </>
+              ) : (
+                service.title
+              )}
+            </h3>
+
+            {isHero && (
+              <div className="flex flex-wrap gap-2 mb-4">
+                {service.highlights.map((h) => (
+                  <span
+                    key={h}
+                    className="text-[11px] px-3 py-1 rounded-full border backdrop-blur-md"
+                    style={{
+                      borderColor: `${service.color}55`,
+                      color: service.color,
+                      background: `${service.color}10`,
+                    }}
+                  >
+                    {h}
+                  </span>
+                ))}
+              </div>
+            )}
+
+            <div
+              className="flex items-center gap-2 text-white/70 text-xs uppercase tracking-[0.25em] font-medium opacity-0 group-hover:opacity-100 translate-x-[-8px] group-hover:translate-x-0 transition-all duration-500"
+            >
+              <span>Saber más</span>
+              <ArrowUpRight size={14} />
+            </div>
+          </div>
+        </div>
+      </div>
+    </motion.button>
+  );
+}
+
+export default function Services() {
+  const sectionRef = useRef<HTMLElement>(null);
+  const titleRef = useRef<HTMLHeadingElement>(null);
+  const gridRef = useRef<HTMLDivElement>(null);
+  const [active, setActive] = useState<ServiceData | null>(null);
+  const { colors } = CoreFitTheme;
+
+  useLayoutEffect(() => {
     const ctx = gsap.context(() => {
-
-
-
-      if (cardRef.current) {
-
-
-
-        gsap.fromTo(
-
-          cardRef.current,
-
-          { y: 200, autoAlpha: 0, rotate: 180 },
-
-          {
-            y: 0, autoAlpha: 1, duration: 2, ease: "back.out(1.7)", rotate: 0,
-
-            scrollTrigger: {
-
-              trigger: cardRef.current,
-
-              start: "top 80%",
-
-              end: "bottom center",
-
-              toggleActions: "play none none reverse"
-
-            }
-
-          });
-
-
-        Draggable.create(".draggable-card", {
-          type: "x,y",
-          edgeResistance: 0.65,
-          zIndexBoost: true,
-
-          onDragEnd: function () {
-            gsap.to(this.target, {
-              x: 0,
-              y: 0,
-              duration: 0.5,
-              ease: "power2.out"
-            });
+      gsap.fromTo(
+        titleRef.current,
+        { y: 60, opacity: 0, filter: "blur(12px)" },
+        {
+          y: 0,
+          opacity: 1,
+          filter: "blur(0px)",
+          duration: 1.1,
+          ease: "expo.out",
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: "top 80%",
+            toggleActions: "play none none reverse",
           },
-        });
+        }
+      );
+
+      const cards = gridRef.current?.querySelectorAll("[data-bento-card]");
+      if (cards && cards.length) {
+        gsap.fromTo(
+          cards,
+          { y: 80, opacity: 0, filter: "blur(8px)" },
+          {
+            y: 0,
+            opacity: 1,
+            filter: "blur(0px)",
+            duration: 0.9,
+            stagger: { each: 0.08, from: "start" },
+            ease: "expo.out",
+            scrollTrigger: {
+              trigger: gridRef.current,
+              start: "top 75%",
+              toggleActions: "play none none reverse",
+            },
+          }
+        );
       }
-
-    }, sectionRef); //Scope al sectionRef
-
+    }, sectionRef);
     return () => ctx.revert();
-
   }, []);
 
   return (
-    <section ref={sectionRef} className="relative h-screen flex items-center justify-center bg-black px-10 overflow-hidden">
-      {/* <div className="absolute inset-0 -z-10">
-        <Particles />
-      </div> */}
-      <div className="grid grid-cols-5 grid-rows-5 gap-4 w-full max-w-7xl">
-        {/* IZQUIERDA - animación */}
-        <div className="col-span-3 row-span-5">
+    <LayoutGroup>
+      <section
+        ref={sectionRef}
+        className="relative bg-black px-4 md:px-8 lg:px-12 py-20 md:py-28 overflow-hidden"
+      >
+        <div className="absolute inset-0 pointer-events-none">
+          <CursorGlow color={colors.secondary} size={500} intensity={0.32} />
+        </div>
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            backgroundImage:
+              "linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px)",
+            backgroundSize: "60px 60px",
+            maskImage:
+              "radial-gradient(ellipse 80% 60% at center, black 30%, transparent 80%)",
+          }}
+        />
+
+        <div className="relative max-w-7xl mx-auto">
+          <div className="text-center mb-12 md:mb-16">
+            <motion.span
+              initial={{ opacity: 0, y: -10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+              className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] uppercase tracking-[0.3em] border border-white/15 mb-5"
+              style={{ color: colors.warning }}
+            >
+              <Sparkles size={11} /> Servicios
+            </motion.span>
+            <h2
+              ref={titleRef}
+              className="text-4xl md:text-6xl lg:text-7xl font-black tracking-tight leading-[1.05]"
+            >
+              Todo lo que necesitas
+              <br />
+              <span style={{ color: colors.text }}>
+                bajo un mismo <AuroraText speed={1.5}>techo.</AuroraText>
+              </span>
+            </h2>
+          </div>
+
           <div
-            className="relative flex h-[300px] w-full items-center justify-center overflow-hidden p-10"
-            ref={containerRef}
+            ref={gridRef}
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4"
+            style={{ gridAutoRows: "minmax(200px, auto)" }}
           >
-            <div className="flex size-full max-h-[200px] max-w-lg flex-col items-stretch justify-between gap-10">
-              <div className="flex flex-row items-center justify-between">
-                <Circle ref={div1Ref} borderColor={colors.text}><Dumbbell style={{ color: colors.text }} /></Circle>
-                <Circle ref={div5Ref} borderColor={colors.success}><Bike style={{ color: colors.success }} /></Circle>
+            <div
+              data-bento-card
+              className="sm:col-span-2 lg:col-span-4 relative rounded-3xl border border-white/10 overflow-hidden p-6 md:p-8 flex flex-col md:flex-row md:items-center md:justify-between gap-5 md:gap-8"
+              style={{
+                background: `linear-gradient(110deg, ${colors.secondary}18 0%, rgba(0,0,0,0.55) 50%, ${colors.primary}11 100%)`,
+                minHeight: "auto",
+              }}
+            >
+              <div
+                className="absolute -top-24 -right-24 w-64 h-64 rounded-full pointer-events-none opacity-60"
+                style={{
+                  background: `radial-gradient(circle, ${colors.secondary}55 0%, transparent 70%)`,
+                  filter: "blur(40px)",
+                }}
+              />
+              <div
+                className="absolute -bottom-24 -left-24 w-64 h-64 rounded-full pointer-events-none opacity-50"
+                style={{
+                  background: `radial-gradient(circle, ${colors.primary}44 0%, transparent 70%)`,
+                  filter: "blur(40px)",
+                }}
+              />
+
+              <div className="relative flex-1">
+                <span
+                  className="inline-flex items-center gap-2 text-[10px] uppercase tracking-[0.3em] font-bold mb-3"
+                  style={{ color: colors.secondary }}
+                >
+                  <span className="relative flex h-2 w-2">
+                    <span
+                      className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75"
+                      style={{ background: colors.success }}
+                    />
+                    <span
+                      className="relative inline-flex rounded-full h-2 w-2"
+                      style={{ background: colors.success }}
+                    />
+                  </span>
+                  Comunidad activa
+                </span>
+                <p className="text-white/70 text-sm md:text-base max-w-xl">
+                  Más de quinientos miembros entrenando con propósito cada
+                  semana. Sumamos socios nuevos esta semana.
+                </p>
               </div>
-              <div className="flex flex-row items-center justify-between">
-                <Circle ref={div2Ref} borderColor={colors.secondary}><Activity style={{ color: colors.secondary }} /></Circle>
-                <Circle ref={div4Ref} borderColor={colors.text} className="size-16" gradientBorder="linear-gradient(205deg, #2979FF, #9E9E9E, #E53935, #00E676, #FFEA00, #F5F5F5, #1C1C1C)"><PersonStanding style={{ color: colors.text }} /></Circle>
-                <Circle ref={div6Ref} borderColor={colors.primary}><BoomBox style={{ color: colors.primary }} /></Circle>
-              </div>
-              <div className="flex flex-row items-center justify-between">
-                <Circle ref={div3Ref} borderColor={colors.warning}><HandFist style={{ color: colors.warning }} /></Circle>
-                <Circle ref={div7Ref} borderColor={colors.textMuted}><LandPlot style={{ color: colors.textMuted }} /></Circle>
+
+              <div className="relative flex items-baseline gap-2 md:gap-3 shrink-0">
+                <span className="text-6xl md:text-8xl lg:text-9xl font-black tabular-nums tracking-tight text-white leading-none">
+                  +500
+                </span>
+                <div className="flex flex-col">
+                  <span
+                    className="text-xs uppercase tracking-[0.25em] font-semibold"
+                    style={{ color: colors.success }}
+                  >
+                    Miembros
+                  </span>
+                  <span className="text-[10px] uppercase tracking-[0.2em] text-white/45">
+                    Activos / semana
+                  </span>
+                </div>
               </div>
             </div>
-            {/* Líneas animadas */}
-            <AnimatedBeam containerRef={containerRef} fromRef={div1Ref} toRef={div4Ref} curvature={-75} endYOffset={-10} />
-            <AnimatedBeam containerRef={containerRef} fromRef={div2Ref} toRef={div4Ref} />
-            <AnimatedBeam containerRef={containerRef} fromRef={div3Ref} toRef={div4Ref} curvature={75} endYOffset={10} />
-            <AnimatedBeam containerRef={containerRef} fromRef={div5Ref} toRef={div4Ref} curvature={-75} endYOffset={-10} reverse />
-            <AnimatedBeam containerRef={containerRef} fromRef={div6Ref} toRef={div4Ref} reverse />
-            <AnimatedBeam containerRef={containerRef} fromRef={div7Ref} toRef={div4Ref} curvature={75} endYOffset={10} reverse />
+
+            <div
+              data-bento-card
+              className="sm:col-span-2 lg:col-span-2 lg:row-span-2"
+              style={{ minHeight: "100%" }}
+            >
+              <BentoCard
+                service={SERVICES[0]}
+                onOpen={setActive}
+                layoutId={`bento-${SERVICES[0].id}`}
+                className="h-full"
+              />
+            </div>
+
+            <div data-bento-card>
+              <BentoCard
+                service={SERVICES[1]}
+                onOpen={setActive}
+                layoutId={`bento-${SERVICES[1].id}`}
+                className="h-full"
+              />
+            </div>
+
+            <div data-bento-card>
+              <BentoCard
+                service={SERVICES[2]}
+                onOpen={setActive}
+                layoutId={`bento-${SERVICES[2].id}`}
+                className="h-full"
+              />
+            </div>
+
+            <div data-bento-card className="sm:col-span-2 lg:col-span-2">
+              <BentoCard
+                service={SERVICES[3]}
+                onOpen={setActive}
+                layoutId={`bento-${SERVICES[3].id}`}
+                className="h-full"
+              />
+            </div>
+
+            <div data-bento-card>
+              <BentoCard
+                service={SERVICES[4]}
+                onOpen={setActive}
+                layoutId={`bento-${SERVICES[4].id}`}
+                className="h-full"
+              />
+            </div>
+
+            <div data-bento-card>
+              <BentoCard
+                service={SERVICES[5]}
+                onOpen={setActive}
+                layoutId={`bento-${SERVICES[5].id}`}
+                className="h-full"
+              />
+            </div>
+
+            <div data-bento-card className="sm:col-span-2 lg:col-span-2">
+              <BentoCard
+                service={SERVICES[6]}
+                onOpen={setActive}
+                layoutId={`bento-${SERVICES[6].id}`}
+                className="h-full"
+              />
+            </div>
           </div>
         </div>
-        {/* DERECHA - título y card */}
-        <div ref={cardRef} className="col-span-2 row-span-5 col-start-4 flex flex-col gap-6 draggable-card cursor-grab active:cursor-grabbing">
-          <Card
-            className="text-white border-neutral-700 shadow-xl rounded-2xl transition-transform hover:scale-[1.02]"
-            style={{ background: '#000000' }}>
-            <CardHeader>
-              <CardTitle className="text-2xl font-semibold text-center">
-                Nuestros <AuroraText speed={1.5}>Servicios</AuroraText>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4 text-sm text-neutral-300">
-              <div className="flex items-center gap-3">
-                <Dumbbell style={{ color: colors.text }} /> Entrenamiento Personalizado con seguimiento constante.
-              </div>
-              <div className="flex items-center gap-3">
-                <Activity style={{ color: colors.secondary }} /> Evaluaciones físicas y planes adaptados a tus objetivos.
-              </div>
-              <div className="flex items-center gap-3">
-                <Bike style={{ color: colors.success }} /> Clases grupales de alta energía.
-              </div>
-              <div className="flex items-center gap-3">
-                <HandFist style={{ color: colors.warning }} /> Programas de fuerza y musculación.
-              </div>
-              <div className="flex items-center gap-3">
-                <BoomBox style={{ color: colors.primary }} /> Ambiente motivador con música y energía constante.
-              </div>
-              <div className="flex items-center gap-3">
-                <LandPlot style={{ color: colors.textMuted }} /> Asesorías de nutrición y suplementación deportiva.
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    </section>
 
-  )
+        <AnimatePresence>
+          {active && (
+            <motion.div
+              className="fixed inset-0 z-[200] flex items-center justify-center p-4 md:p-10"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
+              <motion.div
+                className="absolute inset-0 bg-black/80 backdrop-blur-md"
+                onClick={() => setActive(null)}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+              />
+              <motion.div
+                layoutId={`bento-${active.id}`}
+                className="relative w-full max-w-4xl rounded-3xl overflow-hidden border border-white/10 bg-black"
+                style={{
+                  boxShadow: `0 50px 120px -30px ${active.color}88`,
+                }}
+              >
+                <button
+                  onClick={() => setActive(null)}
+                  data-magnetic
+                  className="absolute top-4 right-4 z-20 w-10 h-10 rounded-full bg-white/10 backdrop-blur-md text-white hover:bg-white/20 transition cursor-pointer flex items-center justify-center"
+                  aria-label="Cerrar"
+                >
+                  <X size={18} />
+                </button>
+                <motion.img
+                  layoutId={`bento-${active.id}-img`}
+                  src={active.image}
+                  alt={active.title}
+                  className="w-full h-[40vh] md:h-[50vh] object-cover"
+                />
+                <div
+                  className="absolute top-0 left-0 right-0 h-[40vh] md:h-[50vh] pointer-events-none"
+                  style={{
+                    background:
+                      "linear-gradient(180deg, rgba(0,0,0,0.4) 0%, transparent 40%, rgba(0,0,0,0.95) 100%)",
+                  }}
+                />
+                <div className="absolute top-1/3 left-6 md:left-10 z-10">
+                  <p
+                    className="text-[10px] uppercase tracking-[0.3em] font-bold mb-2"
+                    style={{ color: active.color }}
+                  >
+                    {active.number} · {active.short}
+                  </p>
+                  <h3 className="text-3xl md:text-5xl font-extrabold tracking-tight text-white">
+                    {active.title}
+                  </h3>
+                </div>
 
+                <motion.div
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3, duration: 0.5 }}
+                  className="relative p-6 md:p-10 -mt-10 md:-mt-16 z-10"
+                >
+                  <p className="text-white/85 text-base md:text-lg leading-relaxed mb-6 max-w-2xl">
+                    {active.description}
+                  </p>
+                  <div className="flex flex-wrap gap-2 mb-8">
+                    {active.highlights.map((h) => (
+                      <span
+                        key={h}
+                        className="text-xs px-3 py-1.5 rounded-full border"
+                        style={{
+                          borderColor: `${active.color}55`,
+                          color: active.color,
+                          background: `${active.color}10`,
+                        }}
+                      >
+                        {h}
+                      </span>
+                    ))}
+                  </div>
+                  <button
+                    onClick={() => setActive(null)}
+                    data-magnetic
+                    className="w-full md:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-full font-bold cursor-pointer transition"
+                    style={{
+                      background: active.color,
+                      color: "#000",
+                      boxShadow: `0 14px 40px -10px ${active.color}`,
+                    }}
+                  >
+                    Quiero este plan <ArrowUpRight size={16} />
+                  </button>
+                </motion.div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </section>
+    </LayoutGroup>
+  );
 }

@@ -184,3 +184,91 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* CoreFit branded scrollbar — dynamic multi-color flow */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #E53935 #0a0a0a;
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-track {
+  background: linear-gradient(180deg, #050505 0%, #0a0a0a 100%);
+  border-left: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+@keyframes scrollbar-flow {
+  0% {
+    background-position: 0% 0%;
+  }
+  100% {
+    background-position: 0% 200%;
+  }
+}
+
+*::-webkit-scrollbar-thumb {
+  background-image: linear-gradient(
+    180deg,
+    #2979FF 0%,
+    #00E676 20%,
+    #FFEA00 40%,
+    #E53935 60%,
+    #2979FF 80%,
+    #00E676 100%
+  );
+  background-size: 100% 200%;
+  background-repeat: repeat-y;
+  animation: scrollbar-flow 6s linear infinite;
+  border-radius: 999px;
+  border: 2px solid #0a0a0a;
+  box-shadow:
+    inset 0 0 4px rgba(255, 255, 255, 0.35),
+    0 0 8px rgba(255, 255, 255, 0.2);
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  animation: scrollbar-flow 2.5s linear infinite;
+  border-color: #1a1a1a;
+  box-shadow:
+    inset 0 0 6px rgba(255, 255, 255, 0.55),
+    0 0 14px rgba(41, 121, 255, 0.55),
+    0 0 24px rgba(229, 57, 53, 0.35),
+    0 0 36px rgba(255, 234, 0, 0.25);
+}
+
+*::-webkit-scrollbar-thumb:active {
+  animation: scrollbar-flow 1s linear infinite;
+  box-shadow:
+    inset 0 0 8px rgba(255, 255, 255, 0.7),
+    0 0 20px rgba(255, 234, 0, 0.7),
+    0 0 32px rgba(229, 57, 53, 0.5);
+}
+
+*::-webkit-scrollbar-corner {
+  background: #0a0a0a;
+}
+
+*::-webkit-scrollbar-button {
+  display: none;
+}
+
+/* Hide scrollbars inside marquees (react-fast-marquee) */
+.rfm-marquee-container,
+.rfm-marquee,
+.rfm-initial-child-container,
+.rfm-child {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.rfm-marquee-container::-webkit-scrollbar,
+.rfm-marquee::-webkit-scrollbar,
+.rfm-initial-child-container::-webkit-scrollbar,
+.rfm-child::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}

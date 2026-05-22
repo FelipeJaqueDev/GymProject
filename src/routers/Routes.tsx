@@ -6,7 +6,7 @@ import Landing from "@/pages/PagesLanding/Landing";
 import Login from "@/pages/PagesLogin/Login";
 import ResetScroll from '../ResetScroll'
 import ContactWrapper from "@/pages/PagesContact/ContactWrapper";
-import Plans from "@/pages/PagesPlans/Plans";
+import PlansWrapper from "@/pages/PagesPlans/PlansWrapper";
 import AboutUs from "@/pages/PagesAboutUs/AboutUs";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
@@ -17,7 +17,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
         <Route path="/contact" element={<ContactWrapper />} />
-        <Route path="/plans" element={<Plans />} />
+        <Route path="/plans" element={<PlansWrapper />} />
         <Route path="/aboutus" element={<AboutUs />} />
       </Routes>
     </BrowserRouter>

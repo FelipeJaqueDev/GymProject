@@ -37,7 +37,7 @@ const gymStatsData = [
 
 const SocialProofCards = () => {
 
-    const statsRef = useRef(null);
+    const statsRef = useRef<HTMLDivElement | null>(null);
     const { colors } = CoreFitTheme;
     // CORRECCIÓN CLAVE: Definimos que contendrá un array de referencias a elementos HTML.
     const numbersRef = useRef<(HTMLElement | null)[]>([]);
@@ -119,7 +119,7 @@ const SocialProofCards = () => {
     return (
         <Box
             ref={statsRef}
-            className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-4xl"
+            className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-4xl mx-auto"
         >
             {gymStatsData.map((stat, index) => ( // Usamos gymStatsData aquí también
                 <div className="draggable-card cursor-grab active:cursor-grabbing">
