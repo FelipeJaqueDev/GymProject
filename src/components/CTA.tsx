@@ -42,6 +42,9 @@ export default function CTA() {
     const { Engine, Runner, World, Bodies, Body } = Matter;
     const engine = Engine.create();
     engine.gravity.y = 1.1;
+    // permite que los cuerpos "duerman" al quedar en reposo, para luego
+    // congelarlos sin un corte brusco
+    engine.enableSleeping = true;
 
     const w = zone.clientWidth;
     const ht = zone.clientHeight;
@@ -92,12 +95,13 @@ export default function CTA() {
     };
     tick();
     setTimeout(() => {
+      // las figuras ya reposaron: detenemos el motor pero las dejamos
+      // congeladas en su posición final (no se eliminan del DOM)
       cancelAnimationFrame(raf);
       Runner.stop(runner);
       World.clear(engine.world, false);
       Engine.clear(engine);
-      pieces.forEach(({ el }) => el.remove());
-    }, 5500);
+    }, 6500);
     confetti({
       particleCount: 80,
       spread: 90,

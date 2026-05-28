@@ -6,7 +6,7 @@ import SmoothScroll from "@/motions/SmoothScroll";
 import MagneticCursor from "@/motions/MagneticCursor";
 import MagneticButton from "@/motions/MagneticButton";
 import CTAShaderBg from "@/components/CTAShaderBg";
-import LocationGlobe from "@/components/LocationGlobe";
+import LocationMap from "@/components/LocationMap";
 import { AuroraText } from "@/components/ui/aurora-text";
 import { useSnackbar } from "notistack";
 import { useForm } from "react-hook-form";
@@ -855,17 +855,8 @@ function Contact() {
                 <MapPin size={16} /> Cómo llegar
               </a>
             </div>
-            <div className="relative flex items-center justify-center">
-              <div
-                className="absolute rounded-full pointer-events-none"
-                style={{
-                  width: "70%",
-                  aspectRatio: 1,
-                  background: `radial-gradient(circle, ${colors.secondary}55 0%, transparent 60%)`,
-                  filter: "blur(40px)",
-                }}
-              />
-              <LocationGlobe />
+            <div className="relative w-full">
+              <LocationMap />
             </div>
           </div>
         </section>

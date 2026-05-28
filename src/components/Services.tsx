@@ -1,4 +1,5 @@
 import { useLayoutEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -527,7 +528,8 @@ export default function Services() {
           </div>
         </div>
 
-        <AnimatePresence>
+        {createPortal(
+          <AnimatePresence>
           {active && (
             <motion.div
               className="fixed inset-0 z-[200] flex items-center justify-center p-4 md:p-10"
@@ -543,8 +545,11 @@ export default function Services() {
                 exit={{ opacity: 0 }}
               />
               <motion.div
-                layoutId={`bento-${active.id}`}
-                className="relative w-full max-w-4xl rounded-3xl overflow-hidden border border-white/10 bg-black"
+                className="relative w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-3xl border border-white/10 bg-black"
+                initial={{ opacity: 0, scale: 0.92, y: 24 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 16 }}
+                transition={{ type: "spring", stiffness: 260, damping: 26 }}
                 style={{
                   boxShadow: `0 50px 120px -30px ${active.color}88`,
                 }}
@@ -558,7 +563,6 @@ export default function Services() {
                   <X size={18} />
                 </button>
                 <motion.img
-                  layoutId={`bento-${active.id}-img`}
                   src={active.image}
                   alt={active.title}
                   className="w-full h-[40vh] md:h-[50vh] object-cover"
@@ -622,7 +626,9 @@ export default function Services() {
               </motion.div>
             </motion.div>
           )}
-        </AnimatePresence>
+        </AnimatePresence>,
+          document.body
+        )}
       </section>
     </LayoutGroup>
   );

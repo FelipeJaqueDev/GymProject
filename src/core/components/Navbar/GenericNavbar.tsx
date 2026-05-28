@@ -59,9 +59,11 @@ export default function GenericNavbar() {
   const navigate = useNavigate();
   const location = useLocation();
   const { colors } = CoreFitTheme;
-  const progressRef = useRef<HTMLDivElement>(null);
+  const progressRectRef = useRef<SVGRectElement>(null);
+  const navBoxRef = useRef<HTMLDivElement>(null);
   const closeTimer = useRef<number | null>(null);
   const lastY = useRef(0);
+  const [navH, setNavH] = useState(56);
 
   const hour = new Date().getHours();
   const isOpen = hour >= 6 && hour < 23;
@@ -80,7 +82,9 @@ export default function GenericNavbar() {
       raf = requestAnimationFrame(() => {
         const max = document.documentElement.scrollHeight - window.innerHeight;
         const p = max > 0 ? y / max : 0;
-        if (progressRef.current) progressRef.current.style.transform = `scaleX(${p})`;
+        // el borde se "dibuja" alrededor del navbar: offset 1 (vacío) → 0 (lleno)
+        if (progressRectRef.current)
+          progressRectRef.current.style.strokeDashoffset = String(1 - p);
         raf = 0;
       });
     };
@@ -93,6 +97,19 @@ export default function GenericNavbar() {
     setMobileOpen(false);
     setOpenMega(null);
   }, [location.pathname]);
+
+  // Medimos el alto real del navbar para que el radio del borde de progreso
+  // forme una pastilla idéntica (radio = alto/2), no una elipse.
+  useEffect(() => {
+    const el = navBoxRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => setNavH(el.offsetHeight));
+    ro.observe(el);
+    setNavH(el.offsetHeight);
+    return () => ro.disconnect();
+  }, []);
+
+  const cornerR = scrolled ? navH / 2 : 16;
 
   const handleEnter = (label: string, hasMega: boolean) => {
     setHovered(label);
@@ -121,6 +138,7 @@ export default function GenericNavbar() {
         className="px-3 md:px-6 pt-3 md:pt-5 pointer-events-none"
       >
         <motion.div
+          ref={navBoxRef}
           initial={false}
           animate={{
             maxWidth: scrolled ? "1100px" : "1400px",
@@ -140,18 +158,53 @@ export default function GenericNavbar() {
               : "0 8px 30px -10px rgba(0,0,0,0.3)",
           }}
         >
-          <div
-            ref={progressRef}
-            className="absolute bottom-0 left-0 h-[2px] origin-left pointer-events-none rounded-full"
-            style={{
-              width: "100%",
-              background: `linear-gradient(90deg, ${colors.secondary}, ${colors.primary}, ${colors.warning})`,
-              transform: "scaleX(0)",
-              opacity: scrolled ? 1 : 0,
-              transition: "opacity 0.4s",
-              boxShadow: `0 0 10px ${colors.secondary}`,
-            }}
-          />
+          {/* Progreso de scroll: se dibuja como borde completo alrededor del navbar */}
+          <svg
+            aria-hidden
+            className="absolute inset-0 pointer-events-none"
+            style={{ width: "100%", height: "100%", overflow: "visible" }}
+          >
+            <defs>
+              <linearGradient id="nav-progress-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor={colors.secondary} />
+                <stop offset="35%" stopColor={colors.success} />
+                <stop offset="70%" stopColor={colors.warning} />
+                <stop offset="100%" stopColor={colors.primary} />
+              </linearGradient>
+            </defs>
+            {/* pista tenue del recorrido completo */}
+            <rect
+              x="0"
+              y="0"
+              width="100%"
+              height="100%"
+              rx={cornerR}
+              ry={cornerR}
+              fill="none"
+              stroke="rgba(255,255,255,0.06)"
+              strokeWidth="2"
+            />
+            {/* borde de progreso que se rellena con el scroll */}
+            <rect
+              ref={progressRectRef}
+              x="0"
+              y="0"
+              width="100%"
+              height="100%"
+              rx={cornerR}
+              ry={cornerR}
+              fill="none"
+              stroke="url(#nav-progress-grad)"
+              strokeWidth="2"
+              strokeLinecap="round"
+              pathLength={1}
+              style={{
+                strokeDasharray: 1,
+                strokeDashoffset: 1,
+                filter: `drop-shadow(0 0 5px ${colors.secondary}aa)`,
+              }}
+            />
+          </svg>
 
           <div className="flex items-center justify-between px-3 md:px-5 py-2 md:py-2.5">
             <motion.button

@@ -133,6 +133,13 @@ function BeforeAfter({ before, after }: { before: string; after: string }) {
   );
 }
 
+// Parsea valores tipo "-12kg", "+8kg", "21km" → { prefix, target, suffix }
+function parseStat(raw: string) {
+  const m = raw.match(/^(\D*)(\d+(?:\.\d+)?)(.*)$/);
+  if (!m) return null;
+  return { prefix: m[1], target: parseFloat(m[2]), suffix: m[3] };
+}
+
 export default function Testimonials() {
   const sectionRef = useRef<HTMLElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
@@ -187,6 +194,40 @@ export default function Testimonials() {
       );
       observer.observe(section);
 
+      // Count-up de los números de resultado (0 → valor) al entrar en pantalla
+      const statEls = gsap.utils.toArray<HTMLElement>("[data-stat-value]");
+      const statData = statEls.map((el) => {
+        const parsed = parseStat(el.getAttribute("data-stat-target") || el.textContent || "");
+        if (parsed) {
+          // mostrar "0" + unidad antes de animar (sin flash del valor final)
+          el.textContent = `${parsed.prefix}0${parsed.suffix}`;
+        }
+        return { el, parsed };
+      });
+
+      const statObserver = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (!entry.isIntersecting) return;
+            const data = statData.find((d) => d.el === entry.target);
+            if (!data || !data.parsed) return;
+            const { prefix, target, suffix } = data.parsed;
+            const counter = { v: 0 };
+            gsap.to(counter, {
+              v: target,
+              duration: 1.4,
+              ease: "power2.out",
+              onUpdate: () => {
+                data.el.textContent = `${prefix}${Math.round(counter.v)}${suffix}`;
+              },
+            });
+            statObserver.unobserve(entry.target);
+          });
+        },
+        { threshold: 0.6 }
+      );
+      statEls.forEach((el) => statObserver.observe(el));
+
       ScrollTrigger.matchMedia({
         "(min-width: 1024px)": () => {
           const cards = track.querySelectorAll("[data-testimonial-card]");
@@ -231,7 +272,10 @@ export default function Testimonials() {
         },
       });
 
-      return () => observer.disconnect();
+      return () => {
+        observer.disconnect();
+        statObserver.disconnect();
+      };
     }, sectionRef);
 
     return () => ctx.revert();

@@ -3,7 +3,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { CoreFitTheme } from "@/themes/CoreFitTheme";
 import { MapPin, Phone, Clock, Navigation } from "lucide-react";
-import LocationGlobe from "./LocationGlobe";
+import LocationMap from "./LocationMap";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -181,18 +181,9 @@ const Location = () => {
 
       <div
         ref={globeRef}
-        className="relative flex items-center justify-center will-change-transform"
+        className="relative w-full will-change-transform"
       >
-        <div
-          className="absolute rounded-full pointer-events-none"
-          style={{
-            width: "70%",
-            aspectRatio: 1,
-            background: `radial-gradient(circle, ${colors.secondary}55 0%, transparent 60%)`,
-            filter: "blur(40px)",
-          }}
-        />
-        <LocationGlobe />
+        <LocationMap />
       </div>
     </section>
   );
